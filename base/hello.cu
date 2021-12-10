@@ -5,8 +5,6 @@
 __global__ void kernelA(){
     printf("Hello, from the GPU!\n");
 }
-
- fontion()
  
 int main()
 {
@@ -18,7 +16,7 @@ int main()
  
     // Call a device function from the host: a kernel launch
     // Which will print from the device
-    kernelA <<<1,100>>>();
+    kernelA <<<1,1>>>();
  
     // This call waits for all of the submitted GPU work to complete
     cudaDeviceSynchronize();
