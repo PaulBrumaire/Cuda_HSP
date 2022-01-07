@@ -14,30 +14,30 @@
 #define WIDTH 28
 #define HEIGHT 28
 
-void vector_add(float *in) {
-    float temp =0;
+void vector_add(double *in) {
+    double temp =0;
     for(int i = 0; i < 10; i++){
         temp += in[i];
     }
-    printf("%f \n",temp);
+    printf("%lf \n",temp);
 }
 
-void indexMax(float *in) {
+void indexMax(double *in) {
     int k = 0;
-    float max = in[k];
+    double max = in[k];
 
     for (int i = 0; i < 10; ++i)
     {
         if (in[i] > max)
         {
-            max = (float)in[i];
+            max = (double)in[i];
             k = i;
         }
     }
     printf("C'est %d \n",k);
 }
 
-void read_file(char* path, float * out){
+void read_file(char* path, double * out){
     FILE *f = fopen(path, "r");
 
     if (f == NULL)
@@ -46,13 +46,13 @@ void read_file(char* path, float * out){
     }
     int i =0;
 
-    while ((fscanf(f,"%f", &out[i])) != EOF){
+    while ((fscanf(f,"%lf", &out[i])) != EOF){
         i++;
     }
     fclose(f);
 }
 
-void readImage(float * data){
+void readImage(double * data){
     FILE *fptr;
     unsigned int magic, nbImg, nbRows, nbCols;
     unsigned char val;
@@ -69,48 +69,69 @@ void readImage(float * data){
     fread(&nbRows, sizeof(int), 1, fptr);
     fread(&nbCols, sizeof(int), 1, fptr);
 
-    for(int i=2; i<WIDTH+2; i++){
-        for(int j=2; j<HEIGHT+2; j++){ 
-            fread(&val, sizeof(unsigned char), 1, fptr);  
-            data[i*P+j]=(float)val/255;
-        }
-    }
+    int no_img = 20;
+    for(int i=0; i<no_img; i++){
 
+
+        for(int i=2; i<WIDTH+2; i++){
+            for(int j=2; j<HEIGHT+2; j++){ 
+                fread(&val, sizeof(unsigned char), 1, fptr);  
+                data[i*P+j]=(double)val/255;
+            }
+        }
+
+    }
     
 }
 
-
-void MatrixInit(float *M, int n, int p,int q){
-    int i;
-    for (i=0;i<n*p*q;i++){
-        M[i]= (float)rand()/(RAND_MAX);
-    }
+void charBckgrndPrint(char *str, double val){
+  printf("\033[48;2;%d;%d;%dm", (int) (val*255), 0, 0);
+  printf("%s\033[0m",str);
 }
 
-void MatrixInit2(float *M, int n, int p,int q){
-    int i;
-    for (i=0;i<n*p*q;i++){
-        M[i]= (float)rand()/(RAND_MAX/2)-1;
+void imgColorPrint(int height, int width, double *img){
+  int row, col;
+  char *str="  ";
+  for(row=0; row<height; row++){
+    for(col=0; col<width; col++){
+      charBckgrndPrint(str,img[row * height + col]);
     }
-}
-
-void MatrixInit0(float *M, int n, int p,int q){
-    int i;
-    for (i=0;i<n*p*q;i++){
-        M[i]= (float) 0;
-    }
+    printf("\n");
+  }
 }
 
 
-void MatrixInitId(float *M, int n, int p,int q){
+void MatrixInit(double *M, int n, int p,int q){
     int i;
     for (i=0;i<n*p*q;i++){
-        M[i]= (float) 0;
+        M[i]= (double)rand()/(RAND_MAX);
     }
-    M[(n*p)/2]= (float) 1;
 }
 
-void MatrixPrint(float *M, int n, int p, int q){
+void MatrixInit2(double *M, int n, int p,int q){
+    int i;
+    for (i=0;i<n*p*q;i++){
+        M[i]= (double)rand()/(RAND_MAX/2)-1;
+    }
+}
+
+void MatrixInit0(double *M, int n, int p,int q){
+    int i;
+    for (i=0;i<n*p*q;i++){
+        M[i]= (double) 0;
+    }
+}
+
+
+void MatrixInitId(double *M, int n, int p,int q){
+    int i;
+    for (i=0;i<n*p*q;i++){
+        M[i]= (double) 0;
+    }
+    M[(n*p)/2]= (double) 1;
+}
+
+void MatrixPrint(double *M, int n, int p, int q){
     int i;
     for (i=0;i<n*p*q;i++){
         if(M[i]>0) printf(" ");
@@ -125,15 +146,15 @@ void MatrixPrint(float *M, int n, int p, int q){
     printf("\n");
 }
 
-__device__ float cudaActivationTanh(float val) {
-    // float temp = exp(2*val);
-    // printf("%f\n",temp);
-    // return (float) (temp-1)/(temp+1);
+__device__ double cudaActivationTanh(double val) {
+    // double temp = exp(2*val);
+    // printf("%lf\n",temp);
+    // return (double) (temp-1)/(temp+1);
     return tanhf(val);
 }
 
 
-void ActivationSoftmax(float* input, size_t size) {
+void ActivationSoftmax(double* input, size_t size) {
 	int i;
 	double m, sum, constant;
 
@@ -158,7 +179,7 @@ void ActivationSoftmax(float* input, size_t size) {
 
 
 
-__global__ void cudaConv2D(float *img, float *kernels, float * out, int n, int p, int q, int k ) {
+__global__ void cudaConv2D(double *img, double *kernels, double * out, int n, int p, int q, int k ) {
     // n,p= lignes,col img
     // q = nb kernels
     // k = dim kernel (k*k)
@@ -171,7 +192,7 @@ __global__ void cudaConv2D(float *img, float *kernels, float * out, int n, int p
     
     int d = blockIdx.x;  //->6  (dim nb kernel deconv)
     
-    float temp=0;
+    double temp=0;
     int i,j;
     //Calcul du bloc K*K
     for (int ki= 0; ki<k;ki++){
@@ -189,7 +210,7 @@ __global__ void cudaConv2D(float *img, float *kernels, float * out, int n, int p
 
 
 
-__global__ void cudaConv3D(float *img, float *kernels, float * out, int n, int p, int q, int k ) {
+__global__ void cudaConv3D(double *img, double *kernels, double * out, int n, int p, int q, int k ) {
     // n,p= lignes,col img
     // q = nb kernels
     // k = dim kernel (k*k)
@@ -209,7 +230,7 @@ __global__ void cudaConv3D(float *img, float *kernels, float * out, int n, int p
     int i,j;
     for (int o=0; o<1; o++){
         //Calcul du bloc K*K =5*5
-        float temp=0;
+        double temp=0;
         for (int ki= 0; ki<k;ki++){
             for (int kj= 0; kj<k;kj++){
                 i=l+ki;
@@ -224,20 +245,20 @@ __global__ void cudaConv3D(float *img, float *kernels, float * out, int n, int p
     }
 }
 
-__global__ void cudaCombine(float *in, float * out, float * id ) {
+__global__ void cudaCombine(double *in, double * out, double * id ) {
     int l = threadIdx.x; // (ligne)
     int c = threadIdx.y;  //(colonne)
     
     int g = blockIdx.x; // (dim out profondeur)
 
-    float temp = 0;
+    double temp = 0;
     for(int i=0;i<6;i++){
         temp+=in[i*16*10*10 + g*10*10 +l*10 +c]*id[i*16+g];
     }
     out[g*10*10 + l*10 + c ]= temp;
 }
 
-__global__ void cudaMeanPool(float *in, float *out, int n, int p, int q) {
+__global__ void cudaMeanPool(double *in, double *out, int n, int p, int q) {
     // n,p= lignes,col in
     // q = nb kernels = profondeur
 
@@ -247,7 +268,7 @@ __global__ void cudaMeanPool(float *in, float *out, int n, int p, int q) {
     int c = threadIdx.y;  //->28 (dim out)
     int d = blockIdx.x;  //->6  (dim nb kernel)
     
-    float temp=0;
+    double temp=0;
     int i,j;
     //Calcul du bloc K*K
     for (int ki= 0; ki<2;ki++){
@@ -262,11 +283,11 @@ __global__ void cudaMeanPool(float *in, float *out, int n, int p, int q) {
 }
 
 
-__global__ void cudaFullyConnected(float *in, float *w, float *out, int n, int p,int q, int activation){
+__global__ void cudaFullyConnected(double *in, double *w, double *out, int n, int p,int q, int activation){
     // n, p= 5 dim in
     // q = 16 profondeur de in
     int l = threadIdx.x; // 120 = taille vecteur sortie
-    float temp = 0;
+    double temp = 0;
     for (int i=0; i<n*p*q;i++){
         temp+=in[i]*w[i*n*p*q +l];
     }
@@ -286,28 +307,28 @@ int main(){
     int L=(N-K+1); //dim out conv
     int M=(L/2); //dim out pool
 
-    float *raw_data, *C1_data, *C1_kernel, *S2_data,*C3_dataTemp, *C3_data , *C3_kernel, *S4_data, *F5_data, *F6_data, *OUTPUT, *W1, *W2, *W3;
+    double *raw_data, *C1_data, *C1_kernel, *S2_data,*C3_dataTemp, *C3_data , *C3_kernel, *S4_data, *F5_data, *F6_data, *OUTPUT, *W1, *W2, *W3;
 
     srand(time(NULL));
 
-    raw_data = (float*)malloc(N*P * sizeof(float));
-    C1_data = (float*)malloc(Q*L*L * sizeof(float));
-    C1_kernel = (float*)malloc(Q*K*K * sizeof(float));
-    S2_data = (float*)malloc(Q*M*M * sizeof(float));
+    raw_data = (double*)malloc(N*P * sizeof(double));
+    C1_data = (double*)malloc(Q*L*L * sizeof(double));
+    C1_kernel = (double*)malloc(Q*K*K * sizeof(double));
+    S2_data = (double*)malloc(Q*M*M * sizeof(double));
 
-    C3_dataTemp = (float*)malloc(96*10*10 * sizeof(float));
-    C3_data = (float*)malloc(16*10*10 * sizeof(float));
-    C3_kernel = (float*)malloc(16*6*K*K * sizeof(float));
-    S4_data = (float*)malloc(16*5*5 * sizeof(float));
+    C3_dataTemp = (double*)malloc(96*10*10 * sizeof(double));
+    C3_data = (double*)malloc(16*10*10 * sizeof(double));
+    C3_kernel = (double*)malloc(16*6*K*K * sizeof(double));
+    S4_data = (double*)malloc(16*5*5 * sizeof(double));
     
-    F5_data = (float*)malloc(120 * sizeof(float));
-    F6_data = (float*)malloc(84 * sizeof(float));
-    OUTPUT = (float*)malloc(10 * sizeof(float));
-    W1 = (float*)malloc(120*16*5*5 * sizeof(float));
-    W2 = (float*)malloc(84*120 * sizeof(float));
-    W3 = (float*)malloc(84*10 * sizeof(float));
+    F5_data = (double*)malloc(120 * sizeof(double));
+    F6_data = (double*)malloc(84 * sizeof(double));
+    OUTPUT = (double*)malloc(10 * sizeof(double));
+    W1 = (double*)malloc(120*16*5*5 * sizeof(double));
+    W2 = (double*)malloc(84*120 * sizeof(double));
+    W3 = (double*)malloc(84*10 * sizeof(double));
 
-    float combineId[96] = {
+    double combineId[96] = {
         1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,1,
         1,1,0,0,0,1,1,1,0,0,1,1,1,1,0,1,
         1,1,1,0,0,0,1,1,1,0,0,1,0,1,1,1,
@@ -321,7 +342,7 @@ int main(){
     //MatrixPrint(raw_data,N,P,1);
     MatrixInit0(C1_data,L,L,Q);
     MatrixInit0(C1_kernel,K,K,Q);
-    read_file("k1.h",C1_kernel);
+    read_file((char *)"k1.h",C1_kernel);
     //MatrixPrint(C1_kernel,K,K,Q);
 
     MatrixInit0(S2_data,M,M,Q);
@@ -329,7 +350,7 @@ int main(){
     MatrixInit0(C3_dataTemp,10,10,96);
     MatrixInit0(C3_data,10,10,16);
     MatrixInit0(C3_kernel,K,K,16*6);
-    read_file("k2.h",C3_kernel);
+    read_file((char *)"k2.h",C3_kernel);
 
     MatrixInit0(S4_data,5,5,16);
 
@@ -337,11 +358,11 @@ int main(){
     MatrixInit0(F6_data,84,1,1);
     MatrixInit0(OUTPUT,10,1,1);
     MatrixInit0(W1,400,120,1);
-    read_file("w1.h",W1);
+    read_file((char *)"w1.h",W1);
     MatrixInit0(W2,120,84,1);
-    read_file("w2.h",W2);
+    read_file((char *)"w2.h",W2);
     MatrixInit0(W3,84,10,1);
-    read_file("w3.h",W3);
+    read_file((char *)"w3.h",W3);
 
 
     //MatrixPrint(combineId,6,16,1);
@@ -352,40 +373,40 @@ int main(){
     printf("KERNEL\n");
     //MatrixPrint(C1_kernel,K,K,1);
     //GPU
-    float *d_combine,*d_raw, *d_C1, *d_C1_kernel, *d_S2,*d_C3Temp, *d_C3, *d_C3_kernel, *d_S4, *d_F5, *d_F6, *d_OUTPUT, *d_W1, *d_W2, *d_W3;
+    double *d_combine,*d_raw, *d_C1, *d_C1_kernel, *d_S2,*d_C3Temp, *d_C3, *d_C3_kernel, *d_S4, *d_F5, *d_F6, *d_OUTPUT, *d_W1, *d_W2, *d_W3;
 
     //CUDA ARRRAY---------------------------------------------------------------------
-    cudaMalloc((void**)&d_raw, sizeof(float)*N*P);
-    cudaMalloc((void**)&d_C1, sizeof(float)*Q*L*L);
-    cudaMalloc((void**)&d_C1_kernel, sizeof(float)*Q*K*K);
-    cudaMalloc((void**)&d_S2, sizeof(float)*Q*M*M);
-    cudaMalloc((void**)&d_C3Temp, sizeof(float)*96*10*10);
-    cudaMalloc((void**)&d_C3, sizeof(float)*16*10*10);
-    cudaMalloc((void**)&d_C3_kernel, sizeof(float)*16*6*K*K);
-    cudaMalloc((void**)&d_combine, sizeof(float)*16*6);
-    cudaMalloc((void**)&d_S4, sizeof(float)*16*5*5);
-    cudaMalloc((void**)&d_F5, sizeof(float)*120);
-    cudaMalloc((void**)&d_F6, sizeof(float)*84);
-    cudaMalloc((void**)&d_OUTPUT, sizeof(float)*10);
-    cudaMalloc((void**)&d_W1, sizeof(float)*120*400);
-    cudaMalloc((void**)&d_W2, sizeof(float)*120*84);
-    cudaMalloc((void**)&d_W3, sizeof(float)*84*10);
+    cudaMalloc((void**)&d_raw, sizeof(double)*N*P);
+    cudaMalloc((void**)&d_C1, sizeof(double)*Q*L*L);
+    cudaMalloc((void**)&d_C1_kernel, sizeof(double)*Q*K*K);
+    cudaMalloc((void**)&d_S2, sizeof(double)*Q*M*M);
+    cudaMalloc((void**)&d_C3Temp, sizeof(double)*96*10*10);
+    cudaMalloc((void**)&d_C3, sizeof(double)*16*10*10);
+    cudaMalloc((void**)&d_C3_kernel, sizeof(double)*16*6*K*K);
+    cudaMalloc((void**)&d_combine, sizeof(double)*16*6);
+    cudaMalloc((void**)&d_S4, sizeof(double)*16*5*5);
+    cudaMalloc((void**)&d_F5, sizeof(double)*120);
+    cudaMalloc((void**)&d_F6, sizeof(double)*84);
+    cudaMalloc((void**)&d_OUTPUT, sizeof(double)*10);
+    cudaMalloc((void**)&d_W1, sizeof(double)*120*400);
+    cudaMalloc((void**)&d_W2, sizeof(double)*120*84);
+    cudaMalloc((void**)&d_W3, sizeof(double)*84*10);
 
-    cudaMemcpy(d_raw, raw_data, sizeof(float) * N*P, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_C1, C1_data, sizeof(float) * Q*L*L, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_C1_kernel, C1_kernel, sizeof(float) * Q*K*K, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_S2, S2_data, sizeof(float) * Q*M*M, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_C3Temp, C3_dataTemp, sizeof(float) * 96*10*10, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_C3, C3_data, sizeof(float) * 16*10*10, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_C3_kernel, C3_kernel, sizeof(float) * 16*6*K*K, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_combine, combineId, sizeof(float) * 16*6, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_S4, S4_data, sizeof(float) * 16*5*5, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_F5, F5_data, sizeof(float) * 120, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_F6, F6_data, sizeof(float) * 84, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_OUTPUT, OUTPUT, sizeof(float) * 10, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_W1, W1, sizeof(float) * 120*400, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_W2, W2, sizeof(float) * 120*84, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_W3, W3, sizeof(float) * 10*84, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_raw, raw_data, sizeof(double) * N*P, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C1, C1_data, sizeof(double) * Q*L*L, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C1_kernel, C1_kernel, sizeof(double) * Q*K*K, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_S2, S2_data, sizeof(double) * Q*M*M, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C3Temp, C3_dataTemp, sizeof(double) * 96*10*10, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C3, C3_data, sizeof(double) * 16*10*10, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_C3_kernel, C3_kernel, sizeof(double) * 16*6*K*K, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_combine, combineId, sizeof(double) * 16*6, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_S4, S4_data, sizeof(double) * 16*5*5, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_F5, F5_data, sizeof(double) * 120, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_F6, F6_data, sizeof(double) * 84, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_OUTPUT, OUTPUT, sizeof(double) * 10, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_W1, W1, sizeof(double) * 120*400, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_W2, W2, sizeof(double) * 120*84, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_W3, W3, sizeof(double) * 10*84, cudaMemcpyHostToDevice);
 
 
 
@@ -440,33 +461,35 @@ int main(){
 
 
     //ARRAY COPY TO CPU --------------------------------------------------------------------------
-    cudaMemcpy(C1_data, d_C1, sizeof(float)* Q*L*L, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C1_data, d_C1, sizeof(double)* Q*L*L, cudaMemcpyDeviceToHost);
     printf("C1\n");
     //MatrixPrint(C1_data,L,L,1);
     
-    cudaMemcpy(S2_data, d_S2, sizeof(float)* Q*M*M, cudaMemcpyDeviceToHost);
+    cudaMemcpy(S2_data, d_S2, sizeof(double)* Q*M*M, cudaMemcpyDeviceToHost);
     printf("MEAN\n");
     //MatrixPrint(S2_data,M,M,1); //M<L
 
-    cudaMemcpy(C3_dataTemp, d_C3Temp, sizeof(float)* 96*10*10, cudaMemcpyDeviceToHost);
-    cudaMemcpy(C3_data, d_C3, sizeof(float)* 16*10*10, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C3_dataTemp, d_C3Temp, sizeof(double)* 96*10*10, cudaMemcpyDeviceToHost);
+    cudaMemcpy(C3_data, d_C3, sizeof(double)* 16*10*10, cudaMemcpyDeviceToHost);
     
     printf("C3 Temp\n");
     //MatrixPrint(C3_dataTemp,10,10,16); 
     printf("C3\n");
     //MatrixPrint(C3_data,10,10,16); //M<L
 
-    cudaMemcpy(S4_data, d_S4, sizeof(float)* 16*5*5, cudaMemcpyDeviceToHost);
+    cudaMemcpy(S4_data, d_S4, sizeof(double)* 16*5*5, cudaMemcpyDeviceToHost);
     printf("MEAN2\n");
     //MatrixPrint(S4_data,5,5,2); 
 
-    cudaMemcpy(OUTPUT, d_OUTPUT, sizeof(float)* 10, cudaMemcpyDeviceToHost);
+    cudaMemcpy(OUTPUT, d_OUTPUT, sizeof(double)* 10, cudaMemcpyDeviceToHost);
     
     cudaDeviceSynchronize();
 
     ActivationSoftmax(OUTPUT,10);
     printf("OUTPUT\n");
     MatrixPrint(OUTPUT,10,1,1); 
+
+    imgColorPrint(32,32,raw_data);
     
     indexMax(OUTPUT);
 
