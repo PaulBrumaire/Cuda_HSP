@@ -22,7 +22,7 @@ En effet, on constate sur l'image ci-dessus qu'une boucle for n'est pas nécessa
 ## Partie 2 - Premières couches du réseau de neurone LeNet-5 : Convolution 2D et subsampling
 
 Une fois qu'on a pris en main le langage cuda, il fallait s'attaquer aux différentes couches présentes dans le réseau.
-L'ensemble du travail réalisé dans le langage cuda ce situe dans ce [fichier](conv.cu) pour la suite des TP.
+L'ensemble du travail réalisé dans le langage cuda ce situe dans ce [fichier](lenet.cu) pour la suite des TP.
 
 La difficulté principale pour réaliser les fonctions de convolutions et subsampling était de bien additioner les bons indices entre eux. En effet entre le fait qu'on travaille avec des matrices de matrices et qu'il était plus facile en C de représenter cette matrice de matrice sous la forme d'un unique vecteur, il était très facile d'avoir les mauvais indices.
 
@@ -45,3 +45,13 @@ Une fois le modèle entrainé, nous avons du réordonner les poids (grâce notam
 Pour finaliser le modèle il manquait deux étapes, créer les dernières couches, ce qui était assez facile vu que ce sont des couches "dense" (c'est à dire tout les neuronnes de sorties sont reliés à tout les neuronnes d'entrées) qui ne nécessitent donc que de simples opérations et multiplications. Et ajouter les bons poids aux kernels initialiser de façon aléatoire jusqu'a maintenant.
 
 Une fois ce travail fait on a pu tester notre modèle, malheureusement celui-ci n'arriver pas à classifier correctement les chiffres présents sur la base de données MNIST. On obtenait des probabilités très proches pour les différents chiffres. On s'est donc interrogé sur d'où pouvait provenir cette erreur et certains points nous paraissent plus probables que d'autres. Tout d'abord la façon dont on a réordonner les poids des kernels pourrait être source de l'erreur et sinon l'erreur proviendrait de nos convolutions où nous pourrions avoir des problèmes d'indice.
+
+Exemple d'erreur de prédiction: 
+
+![image](https://user-images.githubusercontent.com/74967118/149670091-80f6f63a-5f4c-4a92-8904-d600de0d7c66.png)
+
+
+## Partie 5 - Utilisation du code
+
+Pour éxécuter le code il suffit d'éxécuter le fichier [lenet.cu](lenet.cu).
+On peut choisir la matrice à afficher en sortie en changeant la variable dans la fonction MatrixPrint (l 451).
