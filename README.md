@@ -53,5 +53,8 @@ Exemple d'erreur de prédiction:
 
 ## Partie 5 - Utilisation du code
 
-Pour éxécuter le code il suffit d'éxécuter le fichier [lenet.cu](lenet.cu).
-On peut choisir la matrice à afficher en sortie en changeant la variable dans la fonction MatrixPrint (l 451).
+Pour éxécuter le code il suffit de compiler le fichier [lenet.cu](lenet.cu).
+```bash
+cuda lenet.cu -o lenet && ./lenet
+```
+Il est possible de changer d'image de test en modifiant la variable NO_IMG.
