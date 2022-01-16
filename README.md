@@ -58,4 +58,4 @@ Pour éxécuter le code il suffit de compiler le fichier [lenet.cu](lenet.cu).
 cuda lenet.cu -o lenet && ./lenet
 ```
 Il est possible de changer d'image de test en modifiant la variable NO_IMG.
-De plus, le calcul des poids se fait a partir du notebook. Ils sont stockés dans le dossier weights automatiquement. 
+De plus, le calcul des poids se fait à partir du notebook. Ils sont stockés dans le dossier weights automatiquement. 
