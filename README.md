@@ -35,3 +35,13 @@ Enfin il fallait veiller à utiliser les bonnes fonctions d'activation, on peut 
 On a également tester notre travail en permanence pour avoir une idée de ce que le programme faisait. Cela explique la présence de fonction d'initialisations de matrices.
 
 ## Partie 3 - Un peu de Python
+
+Dans cette partie on passe au langage python afin d'entraîner le modèle est derécupérer les poids associer aux différents kernels. Il est en effet plus aisé de faire cela sur python où des bibliothèques comme tensorflow ou keras nous facilitent grandement le travail.
+
+Une fois le modèle entrainé, nous avons du réordonner les poids (grâce notamment à la fonction reshape), puis nous les avons sauvegarder dans des fichiers .h que nous pourrons facilement récupérer dans notre code cuda plus tard.
+
+## Partie 4 - Finalisation du modèle et résultats
+
+Pour finaliser le modèle il manquait deux étapes, créer les dernières couches, ce qui était assez facile vu que ce sont des couches "dense" (c'est à dire tout les neuronnes de sorties sont reliés à tout les neuronnes d'entrées) qui ne nécessitent donc que de simples opérations et multiplications. Et ajouter les bons poids aux kernels initialiser de façon aléatoire jusqu'a maintenant.
+
+Une fois ce travail fait on a pu tester notre modèle, et en ce servant de la fonction d'affichage donnée par l'énoncé nous obtenons le résultat suivant:
