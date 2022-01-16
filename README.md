@@ -24,4 +24,14 @@ En effet, on constate sur l'image ci-dessus qu'une boucle for n'est pas nécessa
 Une fois qu'on a pris en main le langage cuda, il fallait s'attaquer aux différentes couches présentes dans le réseau.
 L'ensemble du travail réalisé dans le langage cuda ce situe dans ce [fichier](conv.cu) pour la suite des TP.
 
+La difficulté principale pour réaliser les fonctions de convolutions et subsampling était de bien additioner les bons indices entre eux. En effet entre le fait qu'on travaille avec des matrices de matrices et qu'il était plus facile en C de représenter cette matrice de matrice sous la forme d'un unique vecteur, il était très facile d'avoir les mauvais indices.
+
+Ci-dessous vous pouvez voir un exemple de fonction codé en cuda, la concolution2D. On peut notamment observer qu'il y a bien du parallélisme dans les opérations effectués mais qu'une double boucle for est quand même nécessaire pour parcourir l'entiereté des kernels qui eux aussi sont des matrices de matrices.
+
 ![image](https://user-images.githubusercontent.com/74967118/149662460-f5f34125-9b0e-4641-8842-323ee2b9b6cb.png)
+
+Enfin il fallait veiller à utiliser les bonnes fonctions d'activation, on peut facilement savoir laquelle il faut utiliser en allant chercher le modèle sur internet.
+
+On a également tester notre travail en permanence pour avoir une idée de ce que le programme faisait. Cela explique la présence de fonction d'initialisations de matrices.
+
+## Partie 3 - Un peu de Python
